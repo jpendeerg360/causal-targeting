@@ -1,0 +1,32 @@
+{
+  "verified_utc": "2026-11-02T23:07:15.658923+00:00",
+  "checks_passed": [
+    "Publisher fingerprint and corrected release row count agree",
+    "Split, evaluation and report sample sizes agree",
+    "Frozen feature allowlist and holdout declaration are intact",
+    "Plan and configuration hashes match freeze",
+    "Evaluation references the frozen model selection",
+    "Full-file missingness checks reconcile",
+    "SQL outcome counts reconcile with evaluation",
+    "Policy estimates are finite",
+    "All policy confidence intervals are ordered",
+    "Every exact policy respects its budget",
+    "No-targeting is exactly zero",
+    "IPW: full-budget policies coincide",
+    "IPW: random value equals audience fraction times full value",
+    "DR: full-budget policies coincide",
+    "DR: random value equals audience fraction times full value",
+    "All paired point differences reconcile",
+    "Primary summary equals machine-readable paired result",
+    "README, report and resume numbers agree with saved primary result",
+    "01_balance_and_effect: PNG, SVG and PDF outputs exist",
+    "02_policy_value_curves: PNG, SVG and PDF outputs exist",
+    "03_primary_budget: PNG, SVG and PDF outputs exist",
+    "04_prediction_vs_targeting: PNG, SVG and PDF outputs exist",
+    "05_development_robustness: PNG, SVG and PDF outputs exist",
+    "Local raw file checksum matches publisher metadata",
+    "Independent SQL audit reproduces primary IPW point estimate and paired SE from row predictions"
+  ],
+  "checks_skipped": [],
+  "status": "PASS"
+}

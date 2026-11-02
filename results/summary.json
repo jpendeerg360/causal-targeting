@@ -1,0 +1,23 @@
+{
+  "title": "Causal Targeting: Who Actually Benefits from Advertising?",
+  "full_rows": 13979592,
+  "train_n": 2000000,
+  "validation_n": 500000,
+  "test_n": 4193056,
+  "primary_budget": 0.2,
+  "primary_estimator": "IPW",
+  "primary_contrast": {
+    "estimate": -15.534554010716958,
+    "se": 2.5352839885569285,
+    "lower": -20.503619318869596,
+    "upper": -10.56548870256432
+  },
+  "tree_vs_random": {
+    "estimate": 72.23895504943663,
+    "se": 4.523967774003968,
+    "lower": 63.372141145169,
+    "upper": 81.10576895370426
+  },
+  "conclusion": "The flexible uplift policy underperformed conversion targeting in the prespecified comparison.",
+  "units": "incremental conversions per 100,000 eligible benchmark users"
+}

@@ -1,0 +1,8 @@
+{
+  "validation_roc_auc": 0.5035829720506558,
+  "validation_log_loss": 0.42215378711641,
+  "constant_log_loss": 0.4213109993553481,
+  "p01": 0.8025373596769411,
+  "p99": 0.9188179869585585,
+  "interpretation": "A diagnostic, not a proof of exchangeability or a design reconstruction."
+}

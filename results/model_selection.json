@@ -1,0 +1,20 @@
+{
+  "tree_candidate": 0,
+  "conversion_candidate": 0,
+  "logistic_candidate": 0,
+  "tree_params": {
+    "max_leaf_nodes": 15,
+    "max_iter": 100,
+    "learning_rate": 0.08,
+    "min_samples_leaf": 150,
+    "l2_regularization": 10.0
+  },
+  "conversion_params": {
+    "max_leaf_nodes": 15,
+    "max_iter": 100,
+    "learning_rate": 0.08,
+    "min_samples_leaf": 150,
+    "l2_regularization": 10.0
+  },
+  "logistic_c": 0.1
+}

@@ -1,0 +1,57 @@
+{
+  "frozen_utc": "2026-11-02T22:55:46.529312+00:00",
+  "primary_budget": 0.2,
+  "primary_contrast": "tree_uplift minus conversion; IPW; conversion outcome",
+  "training_n": 2000000,
+  "validation_n": 500000,
+  "development_n": 9786536,
+  "development_propensity": 0.8500605321433446,
+  "nominal_propensity": 0.85,
+  "features": [
+    "f0",
+    "f1",
+    "f2",
+    "f3",
+    "f4",
+    "f5",
+    "f6",
+    "f7",
+    "f8",
+    "f9",
+    "f10",
+    "f11"
+  ],
+  "plan_sha256": "e2917d63149772c2df65662bbb99ce5ddde8fee39782614a713afbd91dc4c29f",
+  "config_sha256": "8eb56827d5cfc514c11fc6e80be18672322a923ec114ff6e44e48ccbf2615bfb",
+  "model_sha256": {
+    "tree": "e49712a3d23a77ace23315e840b6baf8d296af3317f8959b77702346fde7f981",
+    "conversion": "e49712a3d23a77ace23315e840b6baf8d296af3317f8959b77702346fde7f981",
+    "logistic": "ebc8933fe8f6cfbdde25bbb9486a4c4dd44a49f112ab54706bce8ad9109fa5dd",
+    "assignment": "ad80ea7930b41bcd745442e06bb426de737762bf9d5941a091c12f165d0ba61f"
+  },
+  "selection": {
+    "tree_candidate": 0,
+    "conversion_candidate": 0,
+    "logistic_candidate": 0,
+    "tree_params": {
+      "max_leaf_nodes": 15,
+      "max_iter": 100,
+      "learning_rate": 0.08,
+      "min_samples_leaf": 150,
+      "l2_regularization": 10.0
+    },
+    "conversion_params": {
+      "max_leaf_nodes": 15,
+      "max_iter": 100,
+      "learning_rate": 0.08,
+      "min_samples_leaf": 150,
+      "l2_regularization": 10.0
+    },
+    "logistic_c": 0.1
+  },
+  "logistic_solver_iterations": 137,
+  "development_seconds": 41.2477409997955,
+  "python": "3.12.14",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "test_outcomes_used": false
+}

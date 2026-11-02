@@ -1,0 +1,19 @@
+{
+  "seed": 20261102,
+  "split_salt": "causal-targeting-v1-20261102",
+  "pilot_n": 200000,
+  "tune_n": 500000,
+  "train_n": 2000000,
+  "validation_n": 500000,
+  "propensity": 0.85,
+  "primary_budget": 0.20,
+  "budgets": [0.05, 0.10, 0.20, 0.50],
+  "tree_candidates": [
+    {"max_leaf_nodes": 15, "max_iter": 100, "learning_rate": 0.08, "min_samples_leaf": 150, "l2_regularization": 10.0},
+    {"max_leaf_nodes": 31, "max_iter": 150, "learning_rate": 0.06, "min_samples_leaf": 200, "l2_regularization": 20.0}
+  ],
+  "logistic_c": [0.1, 1.0],
+  "stability_seeds": [20261102, 20261103, 20261104],
+  "threads": 4,
+  "memory_limit": "4GB"
+}

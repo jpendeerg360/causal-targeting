@@ -1,0 +1,14 @@
+{
+  "evaluated_utc": "2026-11-02T23:00:23.954392+00:00",
+  "n_test": 4193056,
+  "treatment_fraction": 0.849859148077202,
+  "conversion_rate": 0.0029334213518731923,
+  "test_conversions": 12300,
+  "test_control_conversions": 1227,
+  "evaluation_seconds": 244.86776358261704,
+  "feature_propensity_min": 0.5207208592777807,
+  "feature_propensity_max": 0.9745585941993248,
+  "feature_propensity_clipped_n": 2531,
+  "intervals": "Pointwise normal row-level score intervals, conditional on frozen fits and realized audience cutoffs",
+  "freeze_sha256": "c30af6045390d5bac3b86797292d0a2e814e74ae9b03e39680dba4e84a74e722"
+}
