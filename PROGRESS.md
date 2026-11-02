@@ -16,3 +16,5 @@
 - Fresh-copy full reproduction completed: re-ingestion, model fitting, evaluation, reports and 25 artifact checks passed. All four model files were byte-identical, and 20 aggregate tables matched within 1e-10 tolerance. This repeated the same fixed analysis/test split, not a new experiment. Recorded results/reproduction_check.json.
 
 No external access blocker remains. No remote repository was published. Scientific limitations are retained-sample identification, unknown negative-label sampling, absent cluster/time keys, rare outcomes and uncertainty conditional on the fitted policies.
+
+- Packaged the Git-ready source and aggregate deliverables. Large downloads, processed records, model files and execution caches were retained in workspace scratch storage outside the deliverable; the reproduction command recreates them.
