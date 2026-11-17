@@ -92,57 +92,68 @@ def report(root: Path, config):
         robustness_line = f'Across budgets ({budgets_text}) the tree-versus-conversion difference was not uniformly negative; see the report. Doubly robust evaluation at 20%: {ci(dr_primary)}.'
     readme = f'''# Causal Targeting: Who Actually Benefits from Advertising?
 
-**Does targeting ads at the people a model predicts will buy, or at the people an ad is predicted to *persuade*, produce more extra conversions?** This project answers that on a large randomized advertising experiment, the corrected Criteo Uplift v2.1 dataset ({int(total.n.sum()):,} rows), using Python, DuckDB SQL, logistic regression and gradient-boosted trees.
+If you can advertise to only {q:.0%} of users, should you choose the people most likely to buy or the people whose purchase decision the ad is most likely to change?
 
-## Why this question matters
+I tested both approaches using **nearly {int(total.n.sum()) / 1_000_000:.0f} million records from a randomized advertising experiment**. I built a Python and DuckDB SQL pipeline to train the models, select audiences, and estimate how many additional conversions each targeting policy would produce on held-out data.
 
-A conversion model ranks users by how likely they are to buy. But many likely buyers would buy without seeing an ad, so showing them one adds little. **Uplift (causal) targeting** instead ranks users by the estimated *increase* in purchase probability caused by the ad. In principle it should spend a limited ad budget better. This project tests whether it does, out of sample, with the analysis plan fixed before seeing any test results.
+**At the {q:.0%} audience budget, conversion ranking outperformed both uplift models.** The boosted-tree uplift policy produced **{-primary.estimate:.1f} fewer incremental conversions per 100,000 eligible users** than conversion ranking (95% CI {-primary.upper:.1f}–{-primary.lower:.1f} fewer). All three models improved on random targeting, but directly estimating treatment effects did not deliver the best policy in this comparison.
 
-## Headline result
+[Read the full report](docs/research_report.md) · [See the research plan](docs/research_plan.md) · [Browse the Python package](src/causal_targeting/)
 
-At the pre-specified budget of reaching 20% of users:
+![Comparison of targeting policies on held-out data at a {q:.0%} audience budget](results/figures/03_primary_budget.png)
 
-- **Boosted-tree uplift targeting produced fewer extra conversions than plain conversion ranking: {ci(primary)} per 100,000 users** (95% CI). {conclusions}
-- {robustness_line}
-- The simpler **logistic uplift** model also trailed conversion ranking ({ci(logistic_vs_conversion)}), but outperformed tree uplift (tree minus logistic: {ci(simple)}).
-- Every model-based policy beat **random targeting** by a wide margin: tree uplift added {ci(tree_random)} conversions per 100,000 over random.
-- The conversion model predicts buyers very well (ROC AUC {conversion_auc:.2f}). At this budget, its ranking also captured more incremental conversions than the models built specifically to estimate the ad's effect.
+## What I compared
 
-**Takeaway:** a model designed to estimate causal effects is not automatically a better targeting policy. The choice should be made by a randomized comparison of policies, not by model sophistication or predictive accuracy.
+A conversion model finds people likely to buy, including people who would buy without an ad. An uplift model estimates how much assigning someone to treatment changes their probability of buying. With a limited audience budget, the goal is to reach users with the largest incremental benefit.
 
-![Held-out policy comparison at a 20% budget](results/figures/03_primary_budget.png)
+I compared three ways to rank users, then targeted the top {budgets_text} under each policy.
 
-## Results at a 20% audience budget
+| Policy | How it selects users |
+|---|---|
+| Conversion ranking | A boosted model ranks users by their predicted purchase probability under treatment |
+| Logistic uplift | A regularized logistic model with treatment interactions ranks users by their estimated treatment effect |
+| Tree uplift | Separate boosted models for treated and control users estimate the difference in purchase probabilities, an approach known as a T-learner |
+
+Random targeting and targeting nobody provide the reference points. The primary comparison, fixed before test evaluation, was **tree uplift minus conversion ranking at a {q:.0%} audience budget**.
+
+## Results
 
 {main_table}
 
-Values are incremental conversions per 100,000 eligible users, measured against targeting nobody, on an untouched test set of {n_test:,} rows. Intervals are pointwise 95% confidence intervals. The only pre-specified primary comparison is tree uplift minus conversion ranking at 20%.
+Values are estimated additional conversions per **100,000 eligible users**, relative to targeting nobody. They use inverse-probability weighting on the held-out test set of **{n_test:,} users**. All intervals are pointwise 95% confidence intervals.
 
-## Data
+The primary difference was **{ci(primary)}** for tree uplift versus conversion ranking. {robustness_line}
 
-- **Source:** Criteo Uplift Prediction Dataset v2.1 (corrected release), a randomized experiment in which {treatment_rate:.0%} of users were randomly assigned to the ad-eligible treatment group. There are 12 anonymized pre-treatment features, and the conversion rate is {outcome_rate:.3%}.
-- **Splits:** a fixed, hash-based 60/10/30 train/validation/test split.
-  - Final models trained on {freeze['training_n']:,} rows; tuning used {config['tune_n']:,} training and {freeze['validation_n']:,} validation rows.
-  - The test set ({n_test:,} rows, {evaluation['test_conversions']:,} conversions) was held out until model choices were frozen.
-- **Average effect of the ads in the test set:** {ci(ate)} extra conversions per 100,000 users (difference in means).
+The simpler logistic uplift model came closer to conversion ranking, trailing by **{-logistic_vs_conversion.estimate:.1f} [{-logistic_vs_conversion.upper:.1f}, {-logistic_vs_conversion.lower:.1f}]** conversions per 100,000 users. The conversion model’s ROC-AUC was {conversion_auc:.2f}, but the targeting decision was evaluated using incremental conversions. This comparison shows why policy value needs to be measured directly, even when the models are designed for causal estimation.
 
-## Method
+## Data and evaluation
 
-1. **Three targeting policies:**
-   - Conversion ranking (boosted model of purchase probability under treatment)
-   - Logistic uplift (regularized logistic regression with treatment interactions)
-   - Tree uplift (boosted-tree T-learner: separate treated and control models, ranked by their difference)
-2. **Budgets:** each policy targets the top 5%, 10%, 20% or 50% of users. Random targeting and targeting nobody are the reference points.
-3. **Evaluation:** because treatment was randomized with a known 85% probability, each policy's value is estimated by inverse-probability weighting (IPW) on held-out data. Doubly robust estimates and propensity sensitivity checks are reported alongside.
-4. **Discipline:**
-   - The [research plan](docs/research_plan.md) was written before modeling.
-   - Model choices are frozen and hashed in `results/freeze.json` before test evaluation.
-   - Only pre-treatment features enter the models.
-   - Paired confidence intervals compare policies on the same test users.
+The study uses the corrected **Criteo Uplift Prediction Dataset v2.1**, with {int(total.n.sum()):,} rows and 12 anonymized features measured before treatment. In the source experiment, {config['propensity']:.0%} of users were assigned to the ad-eligible treatment group. The overall conversion rate in the dataset is {outcome_rate:.3%}.
 
-## Reproduce
+| Choice | Approach |
+|---|---|
+| Data split | A fixed hash-based split assigns 60% of rows to training, 10% to validation, and 30% to testing |
+| Model development | Tuning uses {config['tune_n']:,} training and {freeze['validation_n']:,} validation rows. Final models train on {freeze['training_n']:,} rows |
+| Test set | {n_test:,} rows with {evaluation['test_conversions']:,} conversions, held out until model choices were frozen |
+| Policy evaluation | Inverse-probability weighting uses the known {config['propensity']:.0%} treatment assignment probability to estimate each policy’s incremental value |
+| Comparisons | Paired confidence intervals compare policies using the same test users |
+| Robustness | Doubly robust estimates and propensity sensitivity checks accompany the primary analysis |
 
-Python 3.12 recommended; run from the repository root. Network access is needed for packages and the 311 MB publisher-hosted dataset. Allow about 4 GB of disk and several GB of RAM. Recorded run time on Apple Silicon was {freeze['development_seconds']:.0f} s for model development and {evaluation['evaluation_seconds']:.0f} s for evaluation, plus download, ingestion and figures.
+Assigning everyone to treatment had an estimated average effect of **{ci(ate)}** additional conversions per 100,000 test users, using a difference in means.
+
+The [research plan](docs/research_plan.md) was written before modeling. Model choices were frozen and hashed in `results/freeze.json` before test evaluation, and the models use only features measured before treatment. The test suite checks splitting, leakage, audience budgets, and estimators using synthetic fixtures.
+
+## What the results can tell us
+
+The main comparison supports conversion ranking over the two uplift policies tested on this benchmark. It also shows how difficult treatment-effect estimation can be when conversions are rare. The test set contains only **{int(arms.query("split == 'test' and treatment == 0").conversions.sum()):,} control-group conversions**, which limits the precision of uplift estimates.
+
+The dataset is anonymized and resampled, with undisclosed subsampling of rows with negative labels. Absolute effects therefore depend on the benchmark’s sampling, and any financial examples in the report use hypothetical costs. Feature-based propensity checks changed the absolute policy values substantially while preserving the direction of the primary comparison.
+
+The random split evaluates performance within this dataset. Performance on future traffic remains an open question. Confidence intervals assume independent rows and exclude variability from retraining the models. Anonymous features also limit demographic fairness analysis. A deployment decision would require a prospective randomized comparison of policies using actual costs, outcomes, and safeguards.
+
+## Reproduce the analysis
+
+Python 3.12 is recommended. Run the commands below from the repository root. Package installation and the 311 MB dataset download require network access. Allow about 4 GB of disk space and several GB of RAM.
 
 ```bash
 python3 -m venv .venv
@@ -150,47 +161,35 @@ source .venv/bin/activate
 python -m pip install -r requirements.lock
 python -m pip install --no-deps -e .
 python -m pytest -q
-python -m causal_targeting run --rebuild     # download, verify checksum, ingest, train, evaluate, report
-python -m causal_targeting verify            # check results and documents agree
+python -m causal_targeting run --rebuild
+python -m causal_targeting verify
 ```
 
-To use an already-downloaded file, add `--data-file /absolute/path/criteo-research-uplift-v2.1.csv.gz`.
+The pipeline downloads and verifies the data, ingests it into DuckDB, trains the models, evaluates the policies, and generates the report. To use a local download, add `--data-file /absolute/path/criteo-research-uplift-v2.1.csv.gz` to the run command.
 
-**Individual stages:** `download`, `prepare`, `develop`, `evaluate`, `report`, `verify`. `report` regenerates figures and documents (including this README) from saved aggregate results. `--rebuild` repeats the fixed plan on the same test set, so it is a reproduction, not a new experiment.
+You can also run individual stages with `download`, `prepare`, `develop`, `evaluate`, `report`, and `verify`. The `report` stage regenerates figures and documents, including this README, from saved aggregate results. Running `--rebuild` repeats the fixed analysis on the same test set.
+
+The recorded Apple Silicon run took {freeze['development_seconds']:.0f} seconds for model development and {evaluation['evaluation_seconds']:.0f} seconds for evaluation, plus time for download, ingestion, and figures.
 
 ## Repository guide
 
 | Path | Contents |
 |---|---|
-| [docs/research_report.md](docs/research_report.md) | Full write-up: identification, results, uncertainty, robustness, business interpretation |
-| [docs/interview_guide.md](docs/interview_guide.md) | Concise defense of each design decision |
-| [docs/resume_bullets.md](docs/resume_bullets.md) | Résumé bullets grounded in the results |
-| [docs/data_sources.md](docs/data_sources.md) | Dataset provenance, erratum, papers, license, checksum |
-| [PROGRESS.md](PROGRESS.md) | Decisions and execution log |
-| `sql/` | DuckDB ingestion, analysis table, data quality, balance and score-decile queries |
-| `src/causal_targeting/` | Models, estimators, CLI and generated reporting |
-| `tests/` | Split, leakage, budget and estimator tests (synthetic fixtures) |
-| `results/` | Machine-readable tables, figures (PNG/SVG/PDF), frozen plan hashes |
-
-## Limitations
-
-- **Benchmark, not a business.**
-  - The dataset is resampled and anonymized, with undisclosed subsampling of negative-label rows, so effects do not translate to a real advertiser's population or ROI.
-  - Any economics shown in the report are labeled hypothetical.
-- **No time or cluster structure.**
-  - Random splits do not test performance on future traffic.
-  - Intervals assume independent rows, and exclude retraining variability.
-- **Rare outcomes.** Only {evaluation['test_control_conversions']:,} control-group conversions in the test set limit precision for uplift estimates.
-- **Sensitivity.** Feature-based propensity checks move the absolute policy values substantially while preserving the direction of the main comparison.
-- **No fairness claims.** Anonymous features do not support demographic fairness conclusions.
-- **Deployment would require** a prospective randomized test of competing policies with real costs, outcomes and safeguards.
+| [Full report](docs/research_report.md) | Identification assumptions, results, uncertainty, robustness, and business interpretation |
+| [Research plan](docs/research_plan.md) | Questions and evaluation choices set before modeling |
+| [Data sources](docs/data_sources.md) | Dataset provenance, erratum, papers, license, and checksum |
+| [Methodological Q&A](docs/interview_guide.md) | Explanation of the design decisions |
+| [Execution log](PROGRESS.md) | Project decisions and run history |
+| `src/causal_targeting/` | Models, estimators, command-line interface, and report generation |
+| `sql/` | DuckDB ingestion, data checks, balance checks, and analysis queries |
+| `tests/` | Tests using synthetic fixtures |
+| `results/` | Aggregate tables, figures, and frozen model specifications |
 
 ## License and citation
 
-- **Code:** [MIT](LICENSE).
-- **Data-derived tables, figures and documents:** [CC BY-NC-SA 4.0](DATA_LICENSE.md), following the Criteo dataset license.
-- **Raw data:** raw data, fitted models and row-level predictions are not included.
-- **Citation:** please cite Diemert et al. (2018, 2021) as listed in [data sources](docs/data_sources.md). No Criteo endorsement is implied.
+Code is available under the [MIT license](LICENSE). Data-derived tables, figures, and documents follow the [CC BY-NC-SA 4.0 terms described here](DATA_LICENSE.md). Raw data, fitted models, and predictions for individual rows are excluded from the repository.
+
+Please cite Diemert et al. (2018, 2021) using the references in [data sources](docs/data_sources.md). This project is independent of Criteo and implies no endorsement.
 '''
     (root / 'README.md').write_text(readme)
     visit_values = values.query("outcome == 'visit' and estimator == 'IPW' and budget == @q").set_index('policy')
