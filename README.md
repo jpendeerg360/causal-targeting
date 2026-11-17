@@ -14,7 +14,7 @@ I tested both approaches using **nearly 14 million records from a randomized adv
 
 A conversion model finds people likely to buy, including people who would buy without an ad. An uplift model estimates how much assigning someone to treatment changes their probability of buying. With a limited audience budget, the goal is to reach users with the largest incremental benefit.
 
-I compared three ways to rank users, then targeted the top 5%, 10%, 20%, or 50% under each policy.
+I compared three ways to rank users, then targeted the top 5%, 10%, 20%, 50% under each policy.
 
 | Policy | How it selects users |
 |---|---|
@@ -26,8 +26,8 @@ Random targeting and targeting nobody provide the reference points. The primary 
 
 ## Results
 
-| Policy at 20% | Incremental conversions [95% CI] | Difference vs random [95% CI] |
-|---|---|---|
+| Policy at 20% | IPW estimate [95% CI] | Difference vs random [95% CI] |
+| --- | --- | --- |
 | Random targeting | 23.1 [20.6, 25.6] | Reference |
 | Conversion ranking | 110.9 [98.9, 122.9] | 87.8 [78.2, 97.4] |
 | Logistic uplift | 104.4 [92.8, 116.0] | 81.3 [71.9, 90.6] |
@@ -35,7 +35,7 @@ Random targeting and targeting nobody provide the reference points. The primary 
 
 Values are estimated additional conversions per **100,000 eligible users**, relative to targeting nobody. They use inverse-probability weighting on the held-out test set of **4,193,056 users**. All intervals are pointwise 95% confidence intervals.
 
-The primary difference was **−15.5 [−20.5, −10.6]** for tree uplift versus conversion ranking. Tree uplift also trailed at every other audience budget tested. A doubly robust evaluation gave the same direction at 20%, with a difference of **−13.3 [−18.4, −8.2]**.
+The primary difference was **-15.5 [-20.5, -10.6]** for tree uplift versus conversion ranking. Tree uplift trailed conversion ranking at every audience budget tested (5%, 10%, 20%, 50%), and under doubly robust evaluation (-13.3 [-18.4, -8.2] at 20%).
 
 The simpler logistic uplift model came closer to conversion ranking, trailing by **6.5 [3.0, 10.1]** conversions per 100,000 users. The conversion model’s ROC-AUC was 0.95, but the targeting decision was evaluated using incremental conversions. This comparison shows why policy value needs to be measured directly, even when the models are designed for causal estimation.
 
@@ -46,7 +46,7 @@ The study uses the corrected **Criteo Uplift Prediction Dataset v2.1**, with 13,
 | Choice | Approach |
 |---|---|
 | Data split | A fixed hash-based split assigns 60% of rows to training, 10% to validation, and 30% to testing |
-| Model development | Tuning uses 500,000 training and 500,000 validation rows. Final models train on 2 million rows |
+| Model development | Tuning uses 500,000 training and 500,000 validation rows. Final models train on 2,000,000 rows |
 | Test set | 4,193,056 rows with 12,300 conversions, held out until model choices were frozen |
 | Policy evaluation | Inverse-probability weighting uses the known 85% treatment assignment probability to estimate each policy’s incremental value |
 | Comparisons | Paired confidence intervals compare policies using the same test users |
